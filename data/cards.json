@@ -1,0 +1,704 @@
+[
+  {
+    "id": "major_00",
+    "name_ko": "바보",
+    "name_en": "The Fool",
+    "arcana": "major",
+    "suit": null,
+    "rank": 0,
+    "image_file": "00_fool.jpg"
+  },
+  {
+    "id": "major_01",
+    "name_ko": "마법사",
+    "name_en": "The Magician",
+    "arcana": "major",
+    "suit": null,
+    "rank": 1,
+    "image_file": "01_magician.jpg"
+  },
+  {
+    "id": "major_02",
+    "name_ko": "여사제",
+    "name_en": "The High Priestess",
+    "arcana": "major",
+    "suit": null,
+    "rank": 2,
+    "image_file": "02_high_priestess.jpg"
+  },
+  {
+    "id": "major_03",
+    "name_ko": "여황제",
+    "name_en": "The Empress",
+    "arcana": "major",
+    "suit": null,
+    "rank": 3,
+    "image_file": "03_empress.jpg"
+  },
+  {
+    "id": "major_04",
+    "name_ko": "황제",
+    "name_en": "The Emperor",
+    "arcana": "major",
+    "suit": null,
+    "rank": 4,
+    "image_file": "04_emperor.jpg"
+  },
+  {
+    "id": "major_05",
+    "name_ko": "교황",
+    "name_en": "The Hierophant",
+    "arcana": "major",
+    "suit": null,
+    "rank": 5,
+    "image_file": "05_hierophant.jpg"
+  },
+  {
+    "id": "major_06",
+    "name_ko": "연인",
+    "name_en": "The Lovers",
+    "arcana": "major",
+    "suit": null,
+    "rank": 6,
+    "image_file": "06_lovers.jpg"
+  },
+  {
+    "id": "major_07",
+    "name_ko": "전차",
+    "name_en": "The Chariot",
+    "arcana": "major",
+    "suit": null,
+    "rank": 7,
+    "image_file": "07_chariot.jpg"
+  },
+  {
+    "id": "major_08",
+    "name_ko": "힘",
+    "name_en": "Strength",
+    "arcana": "major",
+    "suit": null,
+    "rank": 8,
+    "image_file": "08_strength.jpg"
+  },
+  {
+    "id": "major_09",
+    "name_ko": "은둔자",
+    "name_en": "The Hermit",
+    "arcana": "major",
+    "suit": null,
+    "rank": 9,
+    "image_file": "09_hermit.jpg"
+  },
+  {
+    "id": "major_10",
+    "name_ko": "운명의 수레바퀴",
+    "name_en": "Wheel of Fortune",
+    "arcana": "major",
+    "suit": null,
+    "rank": 10,
+    "image_file": "10_wheel_of_fortune.jpg"
+  },
+  {
+    "id": "major_11",
+    "name_ko": "정의",
+    "name_en": "Justice",
+    "arcana": "major",
+    "suit": null,
+    "rank": 11,
+    "image_file": "11_justice.jpg"
+  },
+  {
+    "id": "major_12",
+    "name_ko": "매달린 사람",
+    "name_en": "The Hanged Man",
+    "arcana": "major",
+    "suit": null,
+    "rank": 12,
+    "image_file": "12_hanged_man.jpg"
+  },
+  {
+    "id": "major_13",
+    "name_ko": "죽음",
+    "name_en": "Death",
+    "arcana": "major",
+    "suit": null,
+    "rank": 13,
+    "image_file": "13_death.jpg"
+  },
+  {
+    "id": "major_14",
+    "name_ko": "절제",
+    "name_en": "Temperance",
+    "arcana": "major",
+    "suit": null,
+    "rank": 14,
+    "image_file": "14_temperance.jpg"
+  },
+  {
+    "id": "major_15",
+    "name_ko": "악마",
+    "name_en": "The Devil",
+    "arcana": "major",
+    "suit": null,
+    "rank": 15,
+    "image_file": "15_devil.jpg"
+  },
+  {
+    "id": "major_16",
+    "name_ko": "탑",
+    "name_en": "The Tower",
+    "arcana": "major",
+    "suit": null,
+    "rank": 16,
+    "image_file": "16_tower.jpg"
+  },
+  {
+    "id": "major_17",
+    "name_ko": "별",
+    "name_en": "The Star",
+    "arcana": "major",
+    "suit": null,
+    "rank": 17,
+    "image_file": "17_star.jpg"
+  },
+  {
+    "id": "major_18",
+    "name_ko": "달",
+    "name_en": "The Moon",
+    "arcana": "major",
+    "suit": null,
+    "rank": 18,
+    "image_file": "18_moon.jpg"
+  },
+  {
+    "id": "major_19",
+    "name_ko": "태양",
+    "name_en": "The Sun",
+    "arcana": "major",
+    "suit": null,
+    "rank": 19,
+    "image_file": "19_sun.jpg"
+  },
+  {
+    "id": "major_20",
+    "name_ko": "심판",
+    "name_en": "Judgement",
+    "arcana": "major",
+    "suit": null,
+    "rank": 20,
+    "image_file": "20_judgement.jpg"
+  },
+  {
+    "id": "major_21",
+    "name_ko": "세계",
+    "name_en": "The World",
+    "arcana": "major",
+    "suit": null,
+    "rank": 21,
+    "image_file": "21_world.jpg"
+  },
+  {
+    "id": "wands_01",
+    "name_ko": "완드의 에이스",
+    "name_en": "Ace of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": 1,
+    "image_file": "wands_01.jpg"
+  },
+  {
+    "id": "wands_02",
+    "name_ko": "완드의 2",
+    "name_en": "Two of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": 2,
+    "image_file": "wands_02.jpg"
+  },
+  {
+    "id": "wands_03",
+    "name_ko": "완드의 3",
+    "name_en": "Three of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": 3,
+    "image_file": "wands_03.jpg"
+  },
+  {
+    "id": "wands_04",
+    "name_ko": "완드의 4",
+    "name_en": "Four of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": 4,
+    "image_file": "wands_04.jpg"
+  },
+  {
+    "id": "wands_05",
+    "name_ko": "완드의 5",
+    "name_en": "Five of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": 5,
+    "image_file": "wands_05.jpg"
+  },
+  {
+    "id": "wands_06",
+    "name_ko": "완드의 6",
+    "name_en": "Six of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": 6,
+    "image_file": "wands_06.jpg"
+  },
+  {
+    "id": "wands_07",
+    "name_ko": "완드의 7",
+    "name_en": "Seven of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": 7,
+    "image_file": "wands_07.jpg"
+  },
+  {
+    "id": "wands_08",
+    "name_ko": "완드의 8",
+    "name_en": "Eight of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": 8,
+    "image_file": "wands_08.jpg"
+  },
+  {
+    "id": "wands_09",
+    "name_ko": "완드의 9",
+    "name_en": "Nine of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": 9,
+    "image_file": "wands_09.jpg"
+  },
+  {
+    "id": "wands_10",
+    "name_ko": "완드의 10",
+    "name_en": "Ten of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": 10,
+    "image_file": "wands_10.jpg"
+  },
+  {
+    "id": "wands_11",
+    "name_ko": "완드의 시종",
+    "name_en": "Page of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": 11,
+    "image_file": "wands_11.jpg"
+  },
+  {
+    "id": "wands_12",
+    "name_ko": "완드의 기사",
+    "name_en": "Knight of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": 12,
+    "image_file": "wands_12.jpg"
+  },
+  {
+    "id": "wands_13",
+    "name_ko": "완드의 여왕",
+    "name_en": "Queen of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": 13,
+    "image_file": "wands_13.jpg"
+  },
+  {
+    "id": "wands_14",
+    "name_ko": "완드의 왕",
+    "name_en": "King of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": 14,
+    "image_file": "wands_14.jpg"
+  },
+  {
+    "id": "cups_01",
+    "name_ko": "컵의 에이스",
+    "name_en": "Ace of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": 1,
+    "image_file": "cups_01.jpg"
+  },
+  {
+    "id": "cups_02",
+    "name_ko": "컵의 2",
+    "name_en": "Two of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": 2,
+    "image_file": "cups_02.jpg"
+  },
+  {
+    "id": "cups_03",
+    "name_ko": "컵의 3",
+    "name_en": "Three of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": 3,
+    "image_file": "cups_03.jpg"
+  },
+  {
+    "id": "cups_04",
+    "name_ko": "컵의 4",
+    "name_en": "Four of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": 4,
+    "image_file": "cups_04.jpg"
+  },
+  {
+    "id": "cups_05",
+    "name_ko": "컵의 5",
+    "name_en": "Five of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": 5,
+    "image_file": "cups_05.jpg"
+  },
+  {
+    "id": "cups_06",
+    "name_ko": "컵의 6",
+    "name_en": "Six of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": 6,
+    "image_file": "cups_06.jpg"
+  },
+  {
+    "id": "cups_07",
+    "name_ko": "컵의 7",
+    "name_en": "Seven of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": 7,
+    "image_file": "cups_07.jpg"
+  },
+  {
+    "id": "cups_08",
+    "name_ko": "컵의 8",
+    "name_en": "Eight of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": 8,
+    "image_file": "cups_08.jpg"
+  },
+  {
+    "id": "cups_09",
+    "name_ko": "컵의 9",
+    "name_en": "Nine of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": 9,
+    "image_file": "cups_09.jpg"
+  },
+  {
+    "id": "cups_10",
+    "name_ko": "컵의 10",
+    "name_en": "Ten of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": 10,
+    "image_file": "cups_10.jpg"
+  },
+  {
+    "id": "cups_11",
+    "name_ko": "컵의 시종",
+    "name_en": "Page of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": 11,
+    "image_file": "cups_11.jpg"
+  },
+  {
+    "id": "cups_12",
+    "name_ko": "컵의 기사",
+    "name_en": "Knight of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": 12,
+    "image_file": "cups_12.jpg"
+  },
+  {
+    "id": "cups_13",
+    "name_ko": "컵의 여왕",
+    "name_en": "Queen of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": 13,
+    "image_file": "cups_13.jpg"
+  },
+  {
+    "id": "cups_14",
+    "name_ko": "컵의 왕",
+    "name_en": "King of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": 14,
+    "image_file": "cups_14.jpg"
+  },
+  {
+    "id": "swords_01",
+    "name_ko": "소드의 에이스",
+    "name_en": "Ace of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": 1,
+    "image_file": "swords_01.jpg"
+  },
+  {
+    "id": "swords_02",
+    "name_ko": "소드의 2",
+    "name_en": "Two of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": 2,
+    "image_file": "swords_02.jpg"
+  },
+  {
+    "id": "swords_03",
+    "name_ko": "소드의 3",
+    "name_en": "Three of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": 3,
+    "image_file": "swords_03.jpg"
+  },
+  {
+    "id": "swords_04",
+    "name_ko": "소드의 4",
+    "name_en": "Four of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": 4,
+    "image_file": "swords_04.jpg"
+  },
+  {
+    "id": "swords_05",
+    "name_ko": "소드의 5",
+    "name_en": "Five of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": 5,
+    "image_file": "swords_05.jpg"
+  },
+  {
+    "id": "swords_06",
+    "name_ko": "소드의 6",
+    "name_en": "Six of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": 6,
+    "image_file": "swords_06.jpg"
+  },
+  {
+    "id": "swords_07",
+    "name_ko": "소드의 7",
+    "name_en": "Seven of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": 7,
+    "image_file": "swords_07.jpg"
+  },
+  {
+    "id": "swords_08",
+    "name_ko": "소드의 8",
+    "name_en": "Eight of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": 8,
+    "image_file": "swords_08.jpg"
+  },
+  {
+    "id": "swords_09",
+    "name_ko": "소드의 9",
+    "name_en": "Nine of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": 9,
+    "image_file": "swords_09.jpg"
+  },
+  {
+    "id": "swords_10",
+    "name_ko": "소드의 10",
+    "name_en": "Ten of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": 10,
+    "image_file": "swords_10.jpg"
+  },
+  {
+    "id": "swords_11",
+    "name_ko": "소드의 시종",
+    "name_en": "Page of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": 11,
+    "image_file": "swords_11.jpg"
+  },
+  {
+    "id": "swords_12",
+    "name_ko": "소드의 기사",
+    "name_en": "Knight of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": 12,
+    "image_file": "swords_12.jpg"
+  },
+  {
+    "id": "swords_13",
+    "name_ko": "소드의 여왕",
+    "name_en": "Queen of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": 13,
+    "image_file": "swords_13.jpg"
+  },
+  {
+    "id": "swords_14",
+    "name_ko": "소드의 왕",
+    "name_en": "King of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": 14,
+    "image_file": "swords_14.jpg"
+  },
+  {
+    "id": "pentacles_01",
+    "name_ko": "펜타클의 에이스",
+    "name_en": "Ace of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": 1,
+    "image_file": "pentacles_01.jpg"
+  },
+  {
+    "id": "pentacles_02",
+    "name_ko": "펜타클의 2",
+    "name_en": "Two of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": 2,
+    "image_file": "pentacles_02.jpg"
+  },
+  {
+    "id": "pentacles_03",
+    "name_ko": "펜타클의 3",
+    "name_en": "Three of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": 3,
+    "image_file": "pentacles_03.jpg"
+  },
+  {
+    "id": "pentacles_04",
+    "name_ko": "펜타클의 4",
+    "name_en": "Four of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": 4,
+    "image_file": "pentacles_04.jpg"
+  },
+  {
+    "id": "pentacles_05",
+    "name_ko": "펜타클의 5",
+    "name_en": "Five of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": 5,
+    "image_file": "pentacles_05.jpg"
+  },
+  {
+    "id": "pentacles_06",
+    "name_ko": "펜타클의 6",
+    "name_en": "Six of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": 6,
+    "image_file": "pentacles_06.jpg"
+  },
+  {
+    "id": "pentacles_07",
+    "name_ko": "펜타클의 7",
+    "name_en": "Seven of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": 7,
+    "image_file": "pentacles_07.jpg"
+  },
+  {
+    "id": "pentacles_08",
+    "name_ko": "펜타클의 8",
+    "name_en": "Eight of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": 8,
+    "image_file": "pentacles_08.jpg"
+  },
+  {
+    "id": "pentacles_09",
+    "name_ko": "펜타클의 9",
+    "name_en": "Nine of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": 9,
+    "image_file": "pentacles_09.jpg"
+  },
+  {
+    "id": "pentacles_10",
+    "name_ko": "펜타클의 10",
+    "name_en": "Ten of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": 10,
+    "image_file": "pentacles_10.jpg"
+  },
+  {
+    "id": "pentacles_11",
+    "name_ko": "펜타클의 시종",
+    "name_en": "Page of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": 11,
+    "image_file": "pentacles_11.jpg"
+  },
+  {
+    "id": "pentacles_12",
+    "name_ko": "펜타클의 기사",
+    "name_en": "Knight of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": 12,
+    "image_file": "pentacles_12.jpg"
+  },
+  {
+    "id": "pentacles_13",
+    "name_ko": "펜타클의 여왕",
+    "name_en": "Queen of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": 13,
+    "image_file": "pentacles_13.jpg"
+  },
+  {
+    "id": "pentacles_14",
+    "name_ko": "펜타클의 왕",
+    "name_en": "King of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": 14,
+    "image_file": "pentacles_14.jpg"
+  }
+]
