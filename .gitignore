@@ -1,0 +1,20 @@
+# Downloaded card images (run scripts/download_rws_images.py to get them)
+assets/rws/*.jpg
+assets/rws/*.png
+assets/rws/*.webp
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+.venv/
+venv/
+env/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# OS
+.DS_Store
+Thumbs.db
