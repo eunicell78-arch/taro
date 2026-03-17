@@ -217,12 +217,14 @@ def test_fetch_card_image_returns_path_when_image_exists(tmp_path):
     app = _load_app_module()
 
     fake_img = tmp_path / "00_fool.jpg"
-    fake_img.write_bytes(b"fake-image-data")
+    # Write a valid JPEG (correct magic bytes, size >= _MIN_IMAGE_BYTES).
+    fake_img.write_bytes(b"\xff\xd8\xff" + b"\x00" * app._MIN_IMAGE_BYTES)
 
     with mock.patch.object(app, "ASSETS_DIR", tmp_path):
-        result = app.fetch_card_image("00_fool.jpg")
+        result, error = app.fetch_card_image("00_fool.jpg")
 
     assert result == fake_img
+    assert error is None
 
 
 def test_fetch_card_image_returns_none_for_unknown_file(tmp_path):
@@ -232,9 +234,10 @@ def test_fetch_card_image_returns_none_for_unknown_file(tmp_path):
     app = _load_app_module()
 
     with mock.patch.object(app, "ASSETS_DIR", tmp_path):
-        result = app.fetch_card_image("nonexistent_card.jpg")
+        result, error = app.fetch_card_image("nonexistent_card.jpg")
 
     assert result is None
+    assert error is not None
 
 
 def test_fetch_card_image_downloads_missing_image(tmp_path):
@@ -243,11 +246,16 @@ def test_fetch_card_image_downloads_missing_image(tmp_path):
 
     app = _load_app_module()
 
-    fake_bytes = b"\xff\xd8\xff" + b"\x00" * 16  # minimal JPEG-like header
+    fake_bytes = b"\xff\xd8\xff" + b"\x00" * 16  # minimal JPEG-like bytes
 
-    def fake_urlopen(req, timeout=None):  # noqa: ARG001  – timeout ignored in stub
+    def fake_urlopen(req, timeout=None):  # noqa: ARG001
+        mock_resp = mock.MagicMock()
+        mock_resp.headers.get.side_effect = (
+            lambda k, d="": {"Content-Type": "image/jpeg"}.get(k, d)
+        )
+        mock_resp.read.return_value = fake_bytes
         cm = mock.MagicMock()
-        cm.__enter__ = lambda s: mock.MagicMock(read=lambda: fake_bytes)
+        cm.__enter__ = lambda s: mock_resp
         cm.__exit__ = mock.MagicMock(return_value=False)
         return cm
 
@@ -255,9 +263,10 @@ def test_fetch_card_image_downloads_missing_image(tmp_path):
         mock.patch.object(app, "ASSETS_DIR", tmp_path),
         mock.patch.object(app, "urlopen", fake_urlopen),
     ):
-        result = app.fetch_card_image("00_fool.jpg")
+        result, error = app.fetch_card_image("00_fool.jpg")
 
     assert result is not None
+    assert error is None
     assert result.read_bytes() == fake_bytes
 
 
@@ -271,7 +280,108 @@ def test_fetch_card_image_returns_none_on_network_error(tmp_path):
     with (
         mock.patch.object(app, "ASSETS_DIR", tmp_path),
         mock.patch.object(app, "urlopen", side_effect=URLError("timeout")),
+        mock.patch("time.sleep"),
     ):
-        result = app.fetch_card_image("00_fool.jpg")
+        result, error = app.fetch_card_image("00_fool.jpg")
 
     assert result is None
+    assert error is not None
+
+
+def test_fetch_card_image_invalid_cached_file_triggers_redownload(tmp_path):
+    """A cached file that is too small is deleted and re-downloaded."""
+    import unittest.mock as mock
+
+    app = _load_app_module()
+
+    # Write a tiny (< 5 KB), corrupt cached file.
+    bad_cache = tmp_path / "00_fool.jpg"
+    bad_cache.write_bytes(b"not an image")
+
+    fake_bytes = b"\xff\xd8\xff" + b"\x00" * 16  # JPEG magic bytes
+
+    def fake_urlopen(req, timeout=None):  # noqa: ARG001
+        mock_resp = mock.MagicMock()
+        mock_resp.headers.get.side_effect = (
+            lambda k, d="": {"Content-Type": "image/jpeg"}.get(k, d)
+        )
+        mock_resp.read.return_value = fake_bytes
+        cm = mock.MagicMock()
+        cm.__enter__ = lambda s: mock_resp
+        cm.__exit__ = mock.MagicMock(return_value=False)
+        return cm
+
+    with (
+        mock.patch.object(app, "ASSETS_DIR", tmp_path),
+        mock.patch.object(app, "urlopen", fake_urlopen),
+    ):
+        result, error = app.fetch_card_image("00_fool.jpg")
+
+    assert result is not None
+    assert error is None
+    assert result.read_bytes() == fake_bytes
+
+
+def test_fetch_card_image_non_image_response_rejected(tmp_path):
+    """A non-image Content-Type response is rejected and not written to disk."""
+    import unittest.mock as mock
+
+    app = _load_app_module()
+
+    def fake_urlopen(req, timeout=None):  # noqa: ARG001
+        mock_resp = mock.MagicMock()
+        mock_resp.headers.get.side_effect = (
+            lambda k, d="": {"Content-Type": "text/html"}.get(k, d)
+        )
+        mock_resp.read.return_value = b"<html>error page</html>"
+        cm = mock.MagicMock()
+        cm.__enter__ = lambda s: mock_resp
+        cm.__exit__ = mock.MagicMock(return_value=False)
+        return cm
+
+    with (
+        mock.patch.object(app, "ASSETS_DIR", tmp_path),
+        mock.patch.object(app, "urlopen", fake_urlopen),
+    ):
+        result, error = app.fetch_card_image("00_fool.jpg")
+
+    assert result is None
+    assert error is not None and "non-image" in error
+    assert not (tmp_path / "00_fool.jpg").exists()
+
+
+def test_fetch_card_image_retries_then_succeeds(tmp_path):
+    """A transient HTTP 503 error causes a retry; the second attempt succeeds."""
+    import unittest.mock as mock
+    from urllib.error import HTTPError
+
+    app = _load_app_module()
+
+    fake_bytes = b"\xff\xd8\xff" + b"\x00" * 16  # JPEG magic bytes
+    calls = [0]
+
+    def fake_urlopen(req, timeout=None):  # noqa: ARG001
+        calls[0] += 1
+        if calls[0] == 1:
+            raise HTTPError(req.full_url, 503, "Service Unavailable", {}, None)
+        mock_resp = mock.MagicMock()
+        mock_resp.headers.get.side_effect = (
+            lambda k, d="": {"Content-Type": "image/jpeg"}.get(k, d)
+        )
+        mock_resp.read.return_value = fake_bytes
+        cm = mock.MagicMock()
+        cm.__enter__ = lambda s: mock_resp
+        cm.__exit__ = mock.MagicMock(return_value=False)
+        return cm
+
+    with (
+        mock.patch.object(app, "ASSETS_DIR", tmp_path),
+        mock.patch.object(app, "urlopen", fake_urlopen),
+        mock.patch("time.sleep"),
+    ):
+        result, error = app.fetch_card_image("00_fool.jpg")
+
+    assert result is not None
+    assert error is None
+    assert calls[0] == 2  # first call failed (503), second succeeded
+    assert result.read_bytes() == fake_bytes
