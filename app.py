@@ -217,13 +217,32 @@ st.caption(
     "이미지는 로컬 에셋을 우선 사용하며, 없을 경우 Wikimedia Commons에서 다운로드됩니다."
 )
 
+cards = load_cards()
+meanings = load_meanings()
+
+# Initialise sidebar widget defaults before they are first rendered so that
+# the draw button (processed below, before the sidebar) sees consistent values.
+st.session_state.setdefault("include_reversed", True)
+st.session_state.setdefault("category", "today")
+
+# Process the draw button BEFORE rendering the sidebar so that
+# st.session_state['drawn'] is set during this same script run and the
+# sidebar GPT section appears immediately after the first draw.
+if st.button("카드 뽑기 🃏", type="primary"):
+    st.session_state["drawn"] = draw_cards(
+        cards,
+        n=3,
+        include_reversed=st.session_state["include_reversed"],
+    )
+
 with st.sidebar:
     st.header("설정")
-    include_reversed = st.checkbox("역방향 카드 포함", value=True)
+    include_reversed = st.checkbox("역방향 카드 포함", value=True, key="include_reversed")
     category = st.selectbox(
         "리딩 카테고리",
         options=list(_CATEGORY_LABELS.keys()),
         format_func=lambda k: _CATEGORY_LABELS[k],
+        key="category",
     )
 
     # GPT 상세풀이 – shown after cards are drawn
@@ -240,12 +259,6 @@ with st.sidebar:
     else:
         gpt_question = ""
         gpt_button = False
-
-cards = load_cards()
-meanings = load_meanings()
-
-if st.button("카드 뽑기 🃏", type="primary"):
-    st.session_state["drawn"] = draw_cards(cards, n=3, include_reversed=include_reversed)
 
 if "drawn" in st.session_state:
     drawn = st.session_state["drawn"]
