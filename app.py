@@ -230,7 +230,7 @@ def _require_auth() -> None:
     if st.session_state.get("authed") is True:
         return
 
-    st.title("🔐 사주팔자 풀이")
+   
     st.divider()
     st.info("💡 이 서비스는 인증된 사용자만 이용 가능합니다.")
     st.markdown("비밀번호를 입력하세요")
