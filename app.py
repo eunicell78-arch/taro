@@ -212,7 +212,7 @@ def _get_app_password() -> str:
 
 
 def _require_auth() -> None:
-    """Render a sidebar login gate and stop the app if the session is not authenticated.
+    """Render a full-page login gate and stop the app if the session is not authenticated.
 
     The app is halted via ``st.stop()`` so that no main-area content (card images,
     GPT calls, etc.) is rendered or executed before the user authenticates.
@@ -220,29 +220,34 @@ def _require_auth() -> None:
     pw = _get_app_password()
 
     if not pw:
-        with st.sidebar:
-            st.error(
-                "APP_PASSWORD가 설정되지 않았습니다.\n"
-                "Streamlit Cloud → Settings → Secrets 에 `APP_PASSWORD`를 추가하세요."
-            )
+        st.error(
+            "APP_PASSWORD가 설정되지 않았습니다.\n"
+            "Streamlit Cloud → Settings → Secrets 에 `APP_PASSWORD`를 추가하세요."
+        )
         st.stop()
         return  # unreachable in production; keeps linters/type checkers happy
 
     if st.session_state.get("authed") is True:
         return
 
-    with st.sidebar:
-        st.subheader("🔒 접근 제한")
-        entered = st.text_input("비밀번호", type="password", key="pw_input")
-        login_clicked = st.button("로그인", type="primary", use_container_width=True)
+    st.title("🔐 사주팔자 풀이")
+    st.divider()
+    st.info("💡 이 서비스는 인증된 사용자만 이용 가능합니다.")
+    st.markdown("비밀번호를 입력하세요")
+    entered = st.text_input(
+        "", placeholder="패스워드 입력", type="password", key="pw_input"
+    )
+    login_clicked = st.button("🔓 로그인", use_container_width=True)
 
-        if login_clicked:
-            if entered == pw:
-                st.session_state["authed"] = True
-                st.rerun()
-            else:
-                st.error("비밀번호가 틀렸습니다.")
+    if login_clicked:
+        if entered == pw:
+            st.session_state["authed"] = True
+            st.rerun()
+        else:
+            st.error("비밀번호가 틀렸습니다.")
 
+    st.divider()
+    st.caption("🔒 문의: 관리자에게 연락하세요")
     st.stop()
 
 
@@ -279,8 +284,7 @@ st.session_state.setdefault("include_reversed", True)
 st.session_state.setdefault("category", "today")
 
 # Process the draw button BEFORE rendering the sidebar so that
-# st.session_state['drawn'] is set during this same script run and the
-# sidebar GPT section appears immediately after the first draw.
+# st.session_state['drawn'] is set during this same script run.
 if st.button("카드 뽑기 🃏", type="primary"):
     st.session_state["drawn"] = draw_cards(
         cards,
@@ -300,21 +304,6 @@ with st.sidebar:
         format_func=lambda k: _CATEGORY_LABELS[k],
         key="category",
     )
-
-    # GPT 상세풀이 – shown after cards are drawn
-    if "drawn" in st.session_state:
-        st.divider()
-        st.subheader("🤖 GPT 상세풀이")
-        gpt_question = st.text_area(
-            "질문 (선택)",
-            placeholder="예) 이번 달 연애운은 어떤가요?",
-            help="질문이 없으면 일반 리딩을 생성합니다.",
-            key="gpt_question",
-        )
-        gpt_button = st.button("상세풀이 생성 ✨", type="primary", key="gpt_btn")
-    else:
-        gpt_question = ""
-        gpt_button = False
 
 if "drawn" in st.session_state:
     drawn = st.session_state["drawn"]
@@ -361,6 +350,16 @@ if "drawn" in st.session_state:
                 st.markdown(f"*{cat_label}: {hint}*")
 
     # ── GPT 상세풀이 ─────────────────────────────────────────────────────────
+    st.divider()
+    st.subheader("🤖 GPT 상세풀이")
+    gpt_question = st.text_area(
+        "질문 (선택)",
+        placeholder="예) 이번 달 연애운은 어떤가요?",
+        help="질문이 없으면 일반 리딩을 생성합니다.",
+        key="gpt_question",
+    )
+    gpt_button = st.button("상세풀이 생성 ✨", type="primary", key="gpt_btn")
+
     if gpt_button:
         drawn_key = tuple(
             (c["id"], c["name_ko"], c["name_en"], c["orientation"]) for c in drawn
