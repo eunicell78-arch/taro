@@ -11,6 +11,7 @@ import base64
 import hashlib
 import importlib.util
 import json
+import os
 import random
 import sys
 import time
@@ -198,6 +199,53 @@ def _cached_gpt_reading(
     )
 
 
+# ── Access gate ───────────────────────────────────────────────────────────────
+
+def _get_app_password() -> str:
+    """Return the shared app password from Streamlit secrets or APP_PASSWORD env var."""
+    try:
+        if "APP_PASSWORD" in st.secrets:
+            return str(st.secrets["APP_PASSWORD"]).strip()
+    except Exception:  # noqa: BLE001
+        pass
+    return os.getenv("APP_PASSWORD", "").strip()
+
+
+def _require_auth() -> None:
+    """Render a sidebar login gate and stop the app if the session is not authenticated.
+
+    The app is halted via ``st.stop()`` so that no main-area content (card images,
+    GPT calls, etc.) is rendered or executed before the user authenticates.
+    """
+    pw = _get_app_password()
+
+    if not pw:
+        with st.sidebar:
+            st.error(
+                "APP_PASSWORD가 설정되지 않았습니다.\n"
+                "Streamlit Cloud → Settings → Secrets 에 `APP_PASSWORD`를 추가하세요."
+            )
+        st.stop()
+        return  # unreachable in production; keeps linters/type checkers happy
+
+    if st.session_state.get("authed") is True:
+        return
+
+    with st.sidebar:
+        st.subheader("🔒 접근 제한")
+        entered = st.text_input("비밀번호", type="password", key="pw_input")
+        login_clicked = st.button("로그인", type="primary", use_container_width=True)
+
+        if login_clicked:
+            if entered == pw:
+                st.session_state["authed"] = True
+                st.rerun()
+            else:
+                st.error("비밀번호가 틀렸습니다.")
+
+    st.stop()
+
+
 # ── Streamlit UI ──────────────────────────────────────────────────────────────
 
 _CATEGORY_LABELS = {
@@ -216,6 +264,11 @@ st.caption(
     "78장 라이더-웨이트-스미스 타로 • "
     "이미지는 로컬 에셋을 우선 사용하며, 없을 경우 Wikimedia Commons에서 다운로드됩니다."
 )
+
+# ── Authentication guard ──────────────────────────────────────────────────────
+# Halts the app (st.stop) before any data loading or network/GPT calls when the
+# visitor has not yet entered the shared access password.
+_require_auth()
 
 cards = load_cards()
 meanings = load_meanings()
@@ -237,6 +290,9 @@ if st.button("카드 뽑기 🃏", type="primary"):
 
 with st.sidebar:
     st.header("설정")
+    if st.button("로그아웃", use_container_width=True, key="logout_btn"):
+        st.session_state["authed"] = False
+        st.rerun()
     include_reversed = st.checkbox("역방향 카드 포함", value=True, key="include_reversed")
     category = st.selectbox(
         "리딩 카테고리",

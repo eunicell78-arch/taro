@@ -206,8 +206,36 @@ pytest tests/ -v
 1. GitHub에 코드를 푸시합니다 (이미지 78장이 `assets/rws/` 에 포함됨)
 2. [share.streamlit.io](https://share.streamlit.io) 에서 새 앱 생성
 3. `app.py`를 메인 파일로 지정
-4. (선택) GPT 상세풀이를 사용하려면 앱 Settings → Secrets 에 `OPENAI_API_KEY` 추가
-5. 배포 후 누구나 링크로 접속하면 카드 이미지가 바로 표시됩니다
+4. **앱 접근 비밀번호 설정 (필수)**: 앱 Settings → Secrets 에 아래를 추가합니다:
+
+   ```toml
+   APP_PASSWORD = "원하는_비밀번호"
+   ```
+
+   설정하지 않으면 앱이 실행되지 않습니다. 이 비밀번호를 공유받은 사용자만 앱을 사용할 수 있습니다.
+
+5. (선택) GPT 상세풀이를 사용하려면 같은 Secrets 파일에 `OPENAI_API_KEY`도 추가합니다:
+
+   ```toml
+   APP_PASSWORD = "원하는_비밀번호"
+   OPENAI_API_KEY = "sk-..."
+   ```
+
+6. 배포 후 누구나 링크로 접속하면 사이드바에서 비밀번호를 입력해야 앱을 사용할 수 있습니다
+
+> **로컬 실행 시 비밀번호 설정**:
+>
+> ```bash
+> export APP_PASSWORD="원하는_비밀번호"   # Mac/Linux
+> $env:APP_PASSWORD="원하는_비밀번호"     # Windows PowerShell
+> streamlit run app.py
+> ```
+>
+> 또는 `.streamlit/secrets.toml` 파일에 추가합니다 (`.gitignore`에 포함됨):
+>
+> ```toml
+> APP_PASSWORD = "원하는_비밀번호"
+> ```
 
 > 이미지는 레포에 커밋되어 있으므로 Streamlit Cloud에서 별도 다운로드 없이
 > 즉시 표시됩니다. 혹시 일부 이미지가 누락된 경우 Wikimedia Commons에서
