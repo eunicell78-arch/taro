@@ -7,7 +7,6 @@ Streamlit 기반 78장 라이더-웨이트-스미스 타로 리딩 웹앱.
 """
 from __future__ import annotations
 
-import base64
 import hashlib
 import importlib.util
 import json
@@ -161,15 +160,13 @@ def load_meanings() -> dict:
 
 # ── Draw logic ────────────────────────────────────────────────────────────────
 
-def draw_cards(cards: list, n: int = 3, include_reversed: bool = True) -> list:
-    """Return *n* randomly sampled cards, each with an 'orientation' key."""
+def draw_cards(cards: list, n: int = 3) -> list:
+    """Return *n* randomly sampled cards, each with an 'orientation' key set to 'upright'."""
     selected = random.sample(cards, n)
     return [
         {
             **card,
-            "orientation": (
-                random.choice(["upright", "reversed"]) if include_reversed else "upright"
-            ),
+            "orientation": "upright",
         }
         for card in selected
     ]
@@ -182,11 +179,10 @@ def _cached_gpt_reading(
     drawn_key: tuple,
     question: str,
     category: str,
-    include_reversed: bool,  # noqa: ARG001 – part of cache key so inputs are tracked
 ) -> tuple[Optional[str], Optional[str]]:
     """Cached wrapper around tarot_gpt.generate_reading.
 
-    The cache key is (drawn_key, question, category, include_reversed) so the
+    The cache key is (drawn_key, question, category) so the
     GPT API is only called when the draw or user inputs actually change.
     """
     drawn_cards = [
@@ -278,32 +274,27 @@ _require_auth()
 cards = load_cards()
 meanings = load_meanings()
 
-# Initialise sidebar widget defaults before they are first rendered so that
-# the draw button (processed below, before the sidebar) sees consistent values.
-st.session_state.setdefault("include_reversed", True)
+# Initialise category default before the widget is rendered.
 st.session_state.setdefault("category", "today")
+
+# Category selection in main area, above the draw button.
+category = st.selectbox(
+    "리딩 카테고리",
+    options=list(_CATEGORY_LABELS.keys()),
+    format_func=lambda k: _CATEGORY_LABELS[k],
+    key="category",
+)
 
 # Process the draw button BEFORE rendering the sidebar so that
 # st.session_state['drawn'] is set during this same script run.
 if st.button("카드 뽑기 🃏", type="primary"):
-    st.session_state["drawn"] = draw_cards(
-        cards,
-        n=3,
-        include_reversed=st.session_state["include_reversed"],
-    )
+    st.session_state["drawn"] = draw_cards(cards, n=3)
 
 with st.sidebar:
     st.header("설정")
     if st.button("로그아웃", use_container_width=True, key="logout_btn"):
         st.session_state["authed"] = False
         st.rerun()
-    include_reversed = st.checkbox("역방향 카드 포함", key="include_reversed")
-    category = st.selectbox(
-        "리딩 카테고리",
-        options=list(_CATEGORY_LABELS.keys()),
-        format_func=lambda k: _CATEGORY_LABELS[k],
-        key="category",
-    )
 
 if "drawn" in st.session_state:
     drawn = st.session_state["drawn"]
@@ -312,10 +303,8 @@ if "drawn" in st.session_state:
 
     for col, card, pos in zip(cols, drawn, positions):
         with col:
-            orientation = card["orientation"]
-            label = "정방향 ↑" if orientation == "upright" else "역방향 ↓"
             st.subheader(f"{pos}")
-            st.markdown(f"**{card['name_ko']}** ({card['name_en']})  \n{label}")
+            st.markdown(f"**{card['name_ko']}** ({card['name_en']})")
 
             # Per-card on-demand image download
             with st.spinner(f"{card['name_ko']} 이미지 로딩 중…"):
@@ -323,15 +312,7 @@ if "drawn" in st.session_state:
 
             if img_path:
                 img_bytes = img_path.read_bytes()
-                if orientation == "reversed":
-                    b64 = base64.b64encode(img_bytes).decode()
-                    st.markdown(
-                        f'<img src="data:image/jpeg;base64,{b64}" '
-                        f'style="width:100%;transform:rotate(180deg);">',
-                        unsafe_allow_html=True,
-                    )
-                else:
-                    st.image(img_bytes, use_container_width=True)
+                st.image(img_bytes, use_container_width=True)
             else:
                 st.info("🃏 이미지를 불러올 수 없습니다.")
                 if img_error:
@@ -340,7 +321,7 @@ if "drawn" in st.session_state:
 
             # Meaning and category hint
             card_meanings = meanings["cards"].get(card["id"], {})
-            meaning_text = card_meanings.get(orientation, "")
+            meaning_text = card_meanings.get("upright", "")
             if meaning_text:
                 st.markdown(f"> {meaning_text}")
 
@@ -369,7 +350,6 @@ if "drawn" in st.session_state:
                 drawn_key,
                 gpt_question,
                 category,
-                include_reversed,
             )
 
         if reading_error:

@@ -106,12 +106,12 @@ def test_build_prompt_no_question_placeholder(sample_drawn_cards, sample_meaning
     assert "없음" in prompt
 
 
-def test_build_prompt_contains_orientation_labels(sample_drawn_cards, sample_meanings):
+def test_build_prompt_does_not_contain_orientation_labels(sample_drawn_cards, sample_meanings):
     prompt = tarot_gpt.build_prompt(
         sample_drawn_cards, "today", "오늘의 운세", "", sample_meanings
     )
-    assert "정방향" in prompt
-    assert "역방향" in prompt
+    assert "정방향" not in prompt
+    assert "역방향" not in prompt
 
 
 # ── Tests: generate_reading ───────────────────────────────────────────────────

@@ -29,15 +29,13 @@ def load_meanings():
         return json.load(f)
 
 
-def draw_cards(cards, include_reversed=True):
-    """Minimal draw function mirroring app.py logic."""
+def draw_cards(cards):
+    """Minimal draw function mirroring app.py logic (always upright)."""
     selected = random.sample(cards, 3)
     return [
         {
             **card,
-            "orientation": (
-                random.choice(["upright", "reversed"]) if include_reversed else "upright"
-            ),
+            "orientation": "upright",
         }
         for card in selected
     ]
@@ -115,21 +113,10 @@ def test_draw_unique_cards():
         assert len(ids) == len(set(ids)), "Draw returned duplicate cards"
 
 
-def test_draw_orientations_when_reversed_included():
-    cards = load_cards()
-    seen = set()
-    for _ in range(200):
-        drawn = draw_cards(cards, include_reversed=True)
-        seen.update(c["orientation"] for c in drawn)
-    assert "upright" in seen and "reversed" in seen, (
-        "Expected both orientations when include_reversed=True"
-    )
-
-
-def test_draw_all_upright_when_reversed_excluded():
+def test_draw_all_upright():
     cards = load_cards()
     for _ in range(20):
-        drawn = draw_cards(cards, include_reversed=False)
+        drawn = draw_cards(cards)
         for card in drawn:
             assert card["orientation"] == "upright"
 
