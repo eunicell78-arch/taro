@@ -2,7 +2,8 @@
 🔮 타로카드 리딩 앱
 
 Streamlit 기반 78장 라이더-웨이트-스미스 타로 리딩 웹앱.
-카드 이미지는 필요한 시점에 Wikimedia Commons에서 한 장씩 자동으로 내려받습니다.
+카드 이미지는 로컬 assets/rws/ 에서 우선 로딩하며,
+파일이 없거나 손상된 경우에만 Wikimedia Commons에서 다운로드합니다.
 """
 from __future__ import annotations
 
@@ -19,6 +20,8 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 import streamlit as st
+
+import tarot_gpt
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 
@@ -171,6 +174,30 @@ def draw_cards(cards: list, n: int = 3, include_reversed: bool = True) -> list:
     ]
 
 
+# ── GPT reading (cached) ──────────────────────────────────────────────────────
+
+@st.cache_data(show_spinner=False)
+def _cached_gpt_reading(
+    drawn_key: tuple,
+    question: str,
+    category: str,
+    include_reversed: bool,  # noqa: ARG001 – part of cache key so inputs are tracked
+) -> tuple[Optional[str], Optional[str]]:
+    """Cached wrapper around tarot_gpt.generate_reading.
+
+    The cache key is (drawn_key, question, category, include_reversed) so the
+    GPT API is only called when the draw or user inputs actually change.
+    """
+    drawn_cards = [
+        {"id": cid, "name_ko": nko, "name_en": nen, "orientation": ori}
+        for cid, nko, nen, ori in drawn_key
+    ]
+    cat_label = _CATEGORY_LABELS[category]
+    return tarot_gpt.generate_reading(
+        drawn_cards, category, cat_label, question, load_meanings()
+    )
+
+
 # ── Streamlit UI ──────────────────────────────────────────────────────────────
 
 _CATEGORY_LABELS = {
@@ -185,7 +212,10 @@ _CATEGORY_LABELS = {
 
 st.set_page_config(page_title="🔮 타로카드 리딩", layout="wide")
 st.title("🔮 타로카드 리딩")
-st.caption("78장 라이더-웨이트-스미스 타로 • 이미지는 Wikimedia Commons에서 자동 다운로드됩니다.")
+st.caption(
+    "78장 라이더-웨이트-스미스 타로 • "
+    "이미지는 로컬 에셋을 우선 사용하며, 없을 경우 Wikimedia Commons에서 다운로드됩니다."
+)
 
 with st.sidebar:
     st.header("설정")
@@ -195,6 +225,21 @@ with st.sidebar:
         options=list(_CATEGORY_LABELS.keys()),
         format_func=lambda k: _CATEGORY_LABELS[k],
     )
+
+    # GPT 상세풀이 – shown after cards are drawn
+    if "drawn" in st.session_state:
+        st.divider()
+        st.subheader("🤖 GPT 상세풀이")
+        gpt_question = st.text_area(
+            "질문 (선택)",
+            placeholder="예) 이번 달 연애운은 어떤가요?",
+            help="질문이 없으면 일반 리딩을 생성합니다.",
+            key="gpt_question",
+        )
+        gpt_button = st.button("상세풀이 생성 ✨", type="primary", key="gpt_btn")
+    else:
+        gpt_question = ""
+        gpt_button = False
 
 cards = load_cards()
 meanings = load_meanings()
@@ -245,3 +290,23 @@ if "drawn" in st.session_state:
             if hint:
                 cat_label = _CATEGORY_LABELS[category]
                 st.markdown(f"*{cat_label}: {hint}*")
+
+    # ── GPT 상세풀이 ─────────────────────────────────────────────────────────
+    if gpt_button:
+        drawn_key = tuple(
+            (c["id"], c["name_ko"], c["name_en"], c["orientation"]) for c in drawn
+        )
+        with st.spinner("GPT가 상세풀이를 생성 중입니다…"):
+            reading_text, reading_error = _cached_gpt_reading(
+                drawn_key,
+                gpt_question,
+                category,
+                include_reversed,
+            )
+
+        if reading_error:
+            st.error(reading_error)
+        elif reading_text:
+            st.divider()
+            st.subheader("🤖 GPT 상세풀이")
+            st.markdown(reading_text)

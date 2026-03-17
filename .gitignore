@@ -1,7 +1,9 @@
-# Downloaded card images (run scripts/download_rws_images.py to get them)
-assets/rws/*.jpg
-assets/rws/*.png
-assets/rws/*.webp
+# Card images are committed to the repo under assets/rws/ so they are
+# available on Streamlit Cloud deployments.  Only exclude images that land
+# outside that directory (e.g. ad-hoc test downloads).
+# assets/rws/*.jpg  ← intentionally NOT ignored
+# assets/rws/*.png  ← intentionally NOT ignored
+# assets/rws/*.webp ← intentionally NOT ignored
 
 # Python
 __pycache__/
