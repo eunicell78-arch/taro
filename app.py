@@ -4,11 +4,15 @@
 Streamlit 기반 78장 라이더-웨이트-스미스 타로 리딩 웹앱.
 카드 이미지는 필요한 시점에 Wikimedia Commons에서 한 장씩 자동으로 내려받습니다.
 """
+from __future__ import annotations
+
 import base64
 import hashlib
 import importlib.util
 import json
 import random
+import sys
+import time
 from pathlib import Path
 from typing import Optional
 from urllib.error import HTTPError, URLError
@@ -29,6 +33,10 @@ _USER_AGENT = (
     "TarotAppImageDownloader/1.0 "
     "(https://github.com/eunicell78-arch/tarot; tarot card reading app)"
 )
+
+_MIN_IMAGE_BYTES = 5 * 1024  # cached files smaller than this are treated as corrupt
+_MAX_DOWNLOAD_ATTEMPTS = 3
+_RETRYABLE_HTTP_CODES = frozenset({429, 500, 502, 503, 504})
 
 
 # ── Wikimedia filename mapping (loaded from the download script) ───────────────
@@ -55,31 +63,82 @@ def _wikimedia_url(wiki_name: str) -> str:
     return f"{WIKIMEDIA_FILE_BASE}/{md5[0]}/{md5[:2]}/{name}"
 
 
-def fetch_card_image(image_file: str) -> Optional[Path]:
-    """Return the local path for *image_file*, downloading it on demand from
-    Wikimedia Commons if it is not already present in assets/rws/.
+def _is_image_bytes(data: bytes) -> bool:
+    """Return True if *data* starts with a recognised image magic-byte sequence."""
+    if data[:3] == b"\xff\xd8\xff":                      # JPEG
+        return True
+    if data[:8] == b"\x89PNG\r\n\x1a\n":                # PNG
+        return True
+    if data[:6] in (b"GIF87a", b"GIF89a"):               # GIF
+        return True
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":   # WebP
+        return True
+    return False
 
-    Downloads only the single requested image (per-card, on-demand).
-    Returns ``None`` when the filename is not in the mapping or the download fails.
+
+def fetch_card_image(image_file: str) -> tuple[Optional[Path], Optional[str]]:
+    """Return *(path, None)* when the image is available locally, or *(None, reason)*
+    when it cannot be obtained.
+
+    Validates any cached file (size ≥ 5 KB and valid magic bytes); corrupt or partial
+    files are deleted and re-downloaded.  Uses up to 3 attempts with exponential
+    back-off and jitter for transient HTTP 429/5xx errors and URLErrors.
     """
     dest = ASSETS_DIR / image_file
+
+    # Validate any existing cached file.
     if dest.exists():
-        return dest
+        data = dest.read_bytes()
+        if len(data) >= _MIN_IMAGE_BYTES and _is_image_bytes(data):
+            return dest, None
+        # Corrupt or partial – evict and re-download.
+        dest.unlink(missing_ok=True)
+        print(f"WARN: evicted corrupt/partial cache file {dest.name}", file=sys.stderr)
 
     wiki_name = WIKIMEDIA_FILES.get(image_file)
     if not wiki_name:
-        return None
+        return None, f"no Wikimedia mapping for {image_file!r}"
 
     ASSETS_DIR.mkdir(parents=True, exist_ok=True)
     url = _wikimedia_url(wiki_name)
-    req = Request(url, headers={"User-Agent": _USER_AGENT})
-    try:
-        with urlopen(req, timeout=30) as resp:
-            data = resp.read()
-        dest.write_bytes(data)
-        return dest
-    except (HTTPError, URLError):
-        return None
+    headers = {
+        "User-Agent": _USER_AGENT,
+        "Accept-Language": "en",
+    }
+
+    last_reason = "unknown error"
+    for attempt in range(_MAX_DOWNLOAD_ATTEMPTS):
+        if attempt:
+            delay = (2 ** attempt) + random.uniform(0.0, 1.0)
+            time.sleep(delay)
+        try:
+            req = Request(url, headers=headers)
+            with urlopen(req, timeout=30) as resp:
+                content_type = resp.headers.get("Content-Type", "")
+                if not content_type.startswith("image/"):
+                    last_reason = f"non-image Content-Type: {content_type!r}"
+                    print(f"WARN: {image_file}: {last_reason}", file=sys.stderr)
+                    return None, last_reason  # not retryable
+                data = resp.read()
+            if not _is_image_bytes(data):
+                last_reason = (
+                    f"invalid magic bytes (Content-Type was {content_type!r})"
+                )
+                print(f"WARN: {image_file}: {last_reason}", file=sys.stderr)
+                return None, last_reason  # not retryable
+            dest.write_bytes(data)
+            return dest, None
+        except HTTPError as exc:
+            last_reason = f"HTTP {exc.code}"
+            if exc.code not in _RETRYABLE_HTTP_CODES:
+                break
+        except URLError as exc:
+            last_reason = str(exc.reason)
+        print(
+            f"WARN: {image_file}: attempt {attempt + 1} failed: {last_reason}",
+            file=sys.stderr,
+        )
+    return None, last_reason
 
 
 # ── Data loading ──────────────────────────────────────────────────────────────
@@ -157,7 +216,7 @@ if "drawn" in st.session_state:
 
             # Per-card on-demand image download
             with st.spinner(f"{card['name_ko']} 이미지 로딩 중…"):
-                img_path = fetch_card_image(card["image_file"])
+                img_path, img_error = fetch_card_image(card["image_file"])
 
             if img_path:
                 img_bytes = img_path.read_bytes()
@@ -172,6 +231,9 @@ if "drawn" in st.session_state:
                     st.image(img_bytes, use_container_width=True)
             else:
                 st.info("🃏 이미지를 불러올 수 없습니다.")
+                if img_error:
+                    with st.expander("오류 상세"):
+                        st.caption(img_error)
 
             # Meaning and category hint
             card_meanings = meanings["cards"].get(card["id"], {})
