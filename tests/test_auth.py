@@ -158,5 +158,5 @@ def test_require_auth_shows_error_on_wrong_password(monkeypatch):
 
     assert session.get("authed") is not True
     mock_st.rerun.assert_not_called()
-    # st.error should have been called (inside the sidebar context block)
+    # st.error should have been called (wrong password)
     mock_st.error.assert_called_once()
