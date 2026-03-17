@@ -187,3 +187,91 @@ def test_download_script_covers_all_cards():
 
     missing = expected_files - mapped_files
     assert not missing, f"Download script missing mappings for: {missing}"
+
+
+# ── Tests: fetch_card_image (per-card on-demand download) ────────────────────
+
+def _load_app_module():
+    """Import app.py without executing the Streamlit UI code."""
+    import importlib.util
+    import unittest.mock as mock
+
+    # Stub out streamlit so module-level UI calls don't raise errors.
+    # cache_data must be a passthrough so decorated functions work normally.
+    mock_st = mock.MagicMock()
+    mock_st.cache_data = lambda f: f          # transparent decorator
+    mock_st.button.return_value = False       # don't trigger draw on import
+    mock_st.session_state = {}                # no prior draw state
+
+    with mock.patch.dict("sys.modules", {"streamlit": mock_st}):
+        spec = importlib.util.spec_from_file_location("app", REPO_ROOT / "app.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+    return mod
+
+
+def test_fetch_card_image_returns_path_when_image_exists(tmp_path):
+    """fetch_card_image returns the Path when the image file is already on disk."""
+    import unittest.mock as mock
+
+    app = _load_app_module()
+
+    fake_img = tmp_path / "00_fool.jpg"
+    fake_img.write_bytes(b"fake-image-data")
+
+    with mock.patch.object(app, "ASSETS_DIR", tmp_path):
+        result = app.fetch_card_image("00_fool.jpg")
+
+    assert result == fake_img
+
+
+def test_fetch_card_image_returns_none_for_unknown_file(tmp_path):
+    """fetch_card_image returns None for a filename not in WIKIMEDIA_FILES."""
+    import unittest.mock as mock
+
+    app = _load_app_module()
+
+    with mock.patch.object(app, "ASSETS_DIR", tmp_path):
+        result = app.fetch_card_image("nonexistent_card.jpg")
+
+    assert result is None
+
+
+def test_fetch_card_image_downloads_missing_image(tmp_path):
+    """fetch_card_image downloads from Wikimedia when the local file is absent."""
+    import unittest.mock as mock
+
+    app = _load_app_module()
+
+    fake_bytes = b"\xff\xd8\xff" + b"\x00" * 16  # minimal JPEG-like header
+
+    def fake_urlopen(req, timeout=None):  # noqa: ARG001  – timeout ignored in stub
+        cm = mock.MagicMock()
+        cm.__enter__ = lambda s: mock.MagicMock(read=lambda: fake_bytes)
+        cm.__exit__ = mock.MagicMock(return_value=False)
+        return cm
+
+    with (
+        mock.patch.object(app, "ASSETS_DIR", tmp_path),
+        mock.patch.object(app, "urlopen", fake_urlopen),
+    ):
+        result = app.fetch_card_image("00_fool.jpg")
+
+    assert result is not None
+    assert result.read_bytes() == fake_bytes
+
+
+def test_fetch_card_image_returns_none_on_network_error(tmp_path):
+    """fetch_card_image returns None when the network request fails."""
+    import unittest.mock as mock
+    from urllib.error import URLError
+
+    app = _load_app_module()
+
+    with (
+        mock.patch.object(app, "ASSETS_DIR", tmp_path),
+        mock.patch.object(app, "urlopen", side_effect=URLError("timeout")),
+    ):
+        result = app.fetch_card_image("00_fool.jpg")
+
+    assert result is None
