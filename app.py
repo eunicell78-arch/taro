@@ -297,7 +297,7 @@ with st.sidebar:
     if st.button("로그아웃", use_container_width=True, key="logout_btn"):
         st.session_state["authed"] = False
         st.rerun()
-    include_reversed = st.checkbox("역방향 카드 포함", value=True, key="include_reversed")
+    include_reversed = st.checkbox("역방향 카드 포함", key="include_reversed")
     category = st.selectbox(
         "리딩 카테고리",
         options=list(_CATEGORY_LABELS.keys()),
