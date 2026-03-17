@@ -18,11 +18,6 @@ from typing import Optional
 OPENAI_API_KEY_ENV = "OPENAI_API_KEY"
 _GPT_MODEL = "gpt-4o"
 
-_ORIENTATION_LABELS: dict[str, str] = {
-    "upright": "정방향",
-    "reversed": "역방향",
-}
-
 
 def _get_api_key() -> Optional[str]:
     """Return the OpenAI API key from the environment or Streamlit secrets."""
@@ -64,16 +59,13 @@ def build_prompt(
 
     card_lines: list[str] = []
     for card, pos in zip(drawn_cards, positions):
-        orientation = card["orientation"]
         card_meanings = meanings["cards"].get(card["id"], {})
-        meaning_text = card_meanings.get(orientation, "")
+        meaning_text = card_meanings.get("upright", "")
         hint = card_meanings.get("hints", {}).get(category, "")
-        ori_label = _ORIENTATION_LABELS.get(orientation, orientation)
 
         card_lines.append(
             f"- 위치: {pos}\n"
             f"  카드: {card['name_ko']} ({card['name_en']})\n"
-            f"  방향: {ori_label}\n"
             f"  기본 의미: {meaning_text}\n"
             f"  {category_label} 힌트: {hint}"
         )
@@ -84,9 +76,6 @@ def build_prompt(
     )
 
     c0, c1, c2 = drawn_cards
-    ori0 = _ORIENTATION_LABELS.get(c0["orientation"], c0["orientation"])
-    ori1 = _ORIENTATION_LABELS.get(c1["orientation"], c1["orientation"])
-    ori2 = _ORIENTATION_LABELS.get(c2["orientation"], c2["orientation"])
 
     return f"""당신은 20년 이상의 경력을 가진 전문 타로 리더입니다. \
 라이더-웨이트-스미스 덱의 상징과 의미를 깊이 이해하며, \
@@ -109,15 +98,15 @@ def build_prompt(
 ## 1. 종합 요약
 3장 카드의 전체적인 흐름과 핵심 메시지를 2~3문단으로 요약합니다.
 
-## 2. 과거 카드 — {c0['name_ko']} ({c0['name_en']}) [{ori0}]
+## 2. 과거 카드 — {c0['name_ko']} ({c0['name_en']})
 이 카드가 과거·원인 포지션에서 갖는 의미를 최소 6~8문단으로 상세히 서술합니다.
 {category_label} 맥락, 카드 상징, 현재와의 연결고리를 포함합니다.
 
-## 3. 현재 카드 — {c1['name_ko']} ({c1['name_en']}) [{ori1}]
+## 3. 현재 카드 — {c1['name_ko']} ({c1['name_en']})
 현재 상황에 대한 의미를 최소 6~8문단으로 서술합니다.
 {category_label} 맥락에서의 핵심 메시지와 과거→미래 가교 역할을 설명합니다.
 
-## 4. 미래 카드 — {c2['name_ko']} ({c2['name_en']}) [{ori2}]
+## 4. 미래 카드 — {c2['name_ko']} ({c2['name_en']})
 앞으로의 전망과 가능성을 최소 6~8문단으로 서술합니다.
 {category_label} 맥락에서의 방향 제시와 행동 지침을 포함합니다.
 
