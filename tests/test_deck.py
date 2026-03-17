@@ -198,8 +198,14 @@ def _load_app_module():
 
     # Stub out streamlit so module-level UI calls don't raise errors.
     # cache_data must be a passthrough so decorated functions work normally.
+    # It can be called as @st.cache_data or @st.cache_data(show_spinner=False).
+    def _cache_data_passthrough(func=None, **kwargs):
+        if func is not None:
+            return func  # used as plain @st.cache_data
+        return lambda f: f  # used as @st.cache_data(show_spinner=False)
+
     mock_st = mock.MagicMock()
-    mock_st.cache_data = lambda f: f          # transparent decorator
+    mock_st.cache_data = _cache_data_passthrough
     mock_st.button.return_value = False       # don't trigger draw on import
     mock_st.session_state = {}                # no prior draw state
 
