@@ -123,7 +123,21 @@ def test_build_prompt_does_not_contain_orientation_labels(sample_drawn_cards, sa
     assert "역방향" not in prompt
 
 
-# ── Tests: generate_reading ───────────────────────────────────────────────────
+def test_build_prompt_requests_four_sections(sample_drawn_cards, sample_meanings):
+    """Prompt must include all four required section headers and length guidance."""
+    prompt = tarot_gpt.build_prompt(
+        sample_drawn_cards[:1], "today", "오늘의 운세", "", sample_meanings
+    )
+    assert "한줄요약" in prompt
+    assert "지금상태" in prompt
+    assert "흐름" in prompt
+    assert "지금 해야할것" in prompt
+    assert "500~700자" in prompt
+    # The new format must NOT ask for JSON output
+    assert '"summary"' not in prompt
+    assert '"insight"' not in prompt
+
+
 
 def test_generate_reading_returns_error_when_api_key_missing(
     monkeypatch, sample_drawn_cards, sample_meanings
