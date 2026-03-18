@@ -56,48 +56,76 @@ def build_prompt(
         Full ``meanings_ko.json`` parsed dict (not used in prompt; kept for
         backwards-compatible call sites).
     """
-    if category == "today":
-        positions = ["오늘"]
-    else:
-        positions = ["과거", "현재", "미래"]
+    question_section = (
+        f"질문: {question.strip()}" if question.strip() else "질문: (없음)"
+    )
 
-    # Only card names and positions are passed — no meanings or hints.
+    if category == "today":
+        card = drawn_cards[0]
+        cards_section = (
+            f"- 위치: 오늘\n"
+            f"  카드: {card['name_ko']} ({card['name_en']})"
+        )
+        return f"""너는 타로 해설자가 아니라 '상황을 읽어주는 상담자'다.
+
+리딩 조건:
+- 카드 의미/상징/전통적 해석 설명 금지.
+- 카드 이름을 근거로 사용자의 현재 상태를 읽어라.
+- 반복 금지, 추상적 문장("좋은 기운" 등) 금지.
+- 현실적이고 즉시 실행 가능한 행동 조언 포함.
+- 사용자에게 직접 말하는 형태 ("너는 지금 ~ 상태야").
+
+출력 규격(매우 중요):
+- 아래 3개 섹션을 정확히 이 제목으로 출력한다.
+- 전체 분량은 공백 포함 300자 내외(±30자)로 맞춘다.
+- JSON, 마크다운, 코드펜스, 서론, 인사 등 다른 형식 금지.
+
+오늘의 핵심 상태: ...
+주의할 점: ...
+활용 방법: ...
+
+리딩 정보
+- 카테고리: {category_label}
+- {question_section}
+
+뽑힌 카드
+{cards_section}
+"""
+
+    # 3-card spread (과거 / 현재 / 미래)
+    positions = ["과거", "현재", "미래"]
     card_lines: list[str] = []
     for card, pos in zip(drawn_cards, positions):
         card_lines.append(
             f"- 위치: {pos}\n"
             f"  카드: {card['name_ko']} ({card['name_en']})"
         )
-
     cards_section = "\n\n".join(card_lines)
-    question_section = (
-        f"질문: {question.strip()}" if question.strip() else "질문: (없음)"
-    )
 
     return f"""너는 타로 해설자가 아니라 '상황을 읽어주는 상담자'다.
 
-규칙:
-- 카드 의미/상징/전통적 해석을 직접 설명하지 마라.
-- 카드 이름을 근거로 사용자의 '현재 상태'를 읽어라.
-- 반복하지 마라.
-- 추상적인 문장(예: '좋은 기운', '우주가 돕는다') 쓰지 마라.
-- 과장 없이 현실적으로 말해라.
-- 조언은 반드시 실제 행동으로 이어져야 한다.
+타로 리딩 규칙:
+1. 카드 하나씩 설명하지 말고 서로 연결해서 해석할 것.
+2. 과거 카드는 원인, 현재 카드는 핵심 상태, 미래 카드는 가능성으로 해석할 것.
+3. 미래를 단정하지 말고 조건 기반으로 설명할 것.
+4. 카드 의미를 그대로 설명하지 말고 상황으로 번역할 것.
+5. 반복되는 표현 금지.
 
 문체:
 - 자연스럽고 직설적인 한국어
-- 사용자에게 직접 말하는 형태 ("너는 지금 ~ 상태야")
+- 사용자에게 직접 말하는 형태
 
 출력 규격(매우 중요):
 - 아래 4개 섹션을 정확히 이 제목으로 출력한다.
-- 각 섹션은 2~4문장으로 작성한다.
-- 전체 분량은 공백 포함 500~700자 정도로 맞춘다.
+- 줄바꿈을 유지한다.
+- 한줄요약은 1~2문장으로 작성한다.
+- 과거/현재/미래는 각각 약 300자로 작성한다.
 - JSON, 마크다운, 코드펜스, 서론, 인사 등 다른 형식 금지.
 
-한줄요약: ...
-지금상태: ...
-흐름: ...
-지금 해야할것: ...
+한줄요약: (1~2문장)
+과거: (약 300자)
+현재: (약 300자)
+미래: (약 300자)
 
 리딩 정보
 - 카테고리: {category_label}

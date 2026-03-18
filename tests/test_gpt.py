@@ -123,17 +123,31 @@ def test_build_prompt_does_not_contain_orientation_labels(sample_drawn_cards, sa
     assert "역방향" not in prompt
 
 
-def test_build_prompt_requests_four_sections(sample_drawn_cards, sample_meanings):
-    """Prompt must include all four required section headers and length guidance."""
+def test_build_prompt_today_requests_three_sections(sample_drawn_cards, sample_meanings):
+    """Today prompt must include the 3 fixed section headers and ~300-char guidance."""
     prompt = tarot_gpt.build_prompt(
         sample_drawn_cards[:1], "today", "오늘의 운세", "", sample_meanings
     )
+    assert "오늘의 핵심 상태" in prompt
+    assert "주의할 점" in prompt
+    assert "활용 방법" in prompt
+    assert "300자" in prompt
+    # Must not request JSON output
+    assert '"summary"' not in prompt
+    assert '"insight"' not in prompt
+
+
+def test_build_prompt_others_requests_four_sections(sample_drawn_cards, sample_meanings):
+    """3-card prompt must include 한줄요약 and 과거/현재/미래 section headers."""
+    prompt = tarot_gpt.build_prompt(
+        sample_drawn_cards, "love", "연애운", "", sample_meanings
+    )
     assert "한줄요약" in prompt
-    assert "지금상태" in prompt
-    assert "흐름" in prompt
-    assert "지금 해야할것" in prompt
-    assert "500~700자" in prompt
-    # The new format must NOT ask for JSON output
+    assert "과거" in prompt
+    assert "현재" in prompt
+    assert "미래" in prompt
+    assert "300자" in prompt
+    # Must not request JSON output
     assert '"summary"' not in prompt
     assert '"insight"' not in prompt
 

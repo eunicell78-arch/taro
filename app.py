@@ -250,8 +250,14 @@ def _require_auth() -> None:
 
 # ── GPT output parser ─────────────────────────────────────────────────────────
 
-# Ordered section titles produced by the current prompt format.
-_READING_SECTION_ORDER = ["한줄요약", "지금상태", "흐름", "지금 해야할것"]
+# Section titles for today (1-card) readings.
+_TODAY_SECTION_ORDER = ["오늘의 핵심 상태", "주의할 점", "활용 방법"]
+
+# Section titles for all other (3-card) readings.
+_OTHERS_SECTION_ORDER = ["한줄요약", "과거", "현재", "미래"]
+
+# All known section titles across both formats (used for fallback parsing).
+_ALL_SECTION_TITLES = _TODAY_SECTION_ORDER + _OTHERS_SECTION_ORDER
 
 # Map of legacy JSON keys → Korean section titles (backward-compat).
 _JSON_KEY_MAP = {
@@ -262,12 +268,14 @@ _JSON_KEY_MAP = {
 }
 
 
-def _parse_reading_sections(text: str) -> dict[str, str]:
+def _parse_reading_sections(text: str, category: str = "") -> dict[str, str]:
     """Parse GPT output into displayable sections.
 
     Handles two possible formats:
-    1. 4-section text  (new format): lines starting with section headers in
-       ``_READING_SECTION_ORDER`` followed by a colon.
+    1. Section-header text (current format): lines starting with one of the
+       known section headers followed by a colon.  The set of headers checked
+       is narrowed by ``category`` when provided (``"today"`` → 3-section
+       format; any other value → 4-section format; empty → all headers).
     2. Legacy JSON (old cache/model drift): keys summary/insight/flow/action
        mapped via ``_JSON_KEY_MAP`` to Korean section names.
 
@@ -292,7 +300,14 @@ def _parse_reading_sections(text: str) -> dict[str, str]:
         pass
 
     # 2) Parse section-header text format
-    headers_pattern = "|".join(re.escape(h) for h in _READING_SECTION_ORDER)
+    if category == "today":
+        headers = _TODAY_SECTION_ORDER
+    elif category:
+        headers = _OTHERS_SECTION_ORDER
+    else:
+        headers = _ALL_SECTION_TITLES
+
+    headers_pattern = "|".join(re.escape(h) for h in headers)
     pattern = re.compile(
         rf"^({headers_pattern})\s*:\s*",
         re.MULTILINE,
@@ -426,10 +441,13 @@ if "drawn" in st.session_state:
             st.divider()
             st.subheader("🤖 GPT 상세풀이")
 
-            sections = _parse_reading_sections(reading_text)
+            sections = _parse_reading_sections(reading_text, category)
+            section_order = (
+                _TODAY_SECTION_ORDER if category == "today" else _OTHERS_SECTION_ORDER
+            )
             rendered_any = False
 
-            for key in _READING_SECTION_ORDER:
+            for key in section_order:
                 if key in sections:
                     st.markdown(f"**{key}**")
                     st.write(sections[key])
