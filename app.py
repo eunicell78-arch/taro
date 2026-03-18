@@ -288,7 +288,8 @@ category = st.selectbox(
 # Process the draw button BEFORE rendering the sidebar so that
 # st.session_state['drawn'] is set during this same script run.
 if st.button("카드 뽑기 🃏", type="primary"):
-    st.session_state["drawn"] = draw_cards(cards, n=3)
+    n = 1 if category == "today" else 3
+    st.session_state["drawn"] = draw_cards(cards, n=n)
 
 with st.sidebar:
     st.header("설정")
@@ -298,8 +299,8 @@ with st.sidebar:
 
 if "drawn" in st.session_state:
     drawn = st.session_state["drawn"]
-    positions = ["과거", "현재", "미래"]
-    cols = st.columns(3)
+    positions = ["오늘"] if category == "today" else ["과거", "현재", "미래"]
+    cols = st.columns(len(positions))
 
     for col, card, pos in zip(cols, drawn, positions):
         with col:

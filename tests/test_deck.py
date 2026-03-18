@@ -29,9 +29,9 @@ def load_meanings():
         return json.load(f)
 
 
-def draw_cards(cards):
+def draw_cards(cards, n=3):
     """Minimal draw function mirroring app.py logic (always upright)."""
-    selected = random.sample(cards, 3)
+    selected = random.sample(cards, n)
     return [
         {
             **card,
@@ -103,6 +103,12 @@ def test_draw_returns_three_cards():
     cards = load_cards()
     drawn = draw_cards(cards)
     assert len(drawn) == 3
+
+
+def test_draw_returns_one_card_when_n_is_one():
+    cards = load_cards()
+    drawn = draw_cards(cards, n=1)
+    assert len(drawn) == 1
 
 
 def test_draw_unique_cards():
