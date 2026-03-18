@@ -37,15 +37,15 @@ def build_prompt(
     category: str,
     category_label: str,
     question: str,
-    meanings: dict,
+    meanings: dict,  # kept for signature compatibility – not used
 ) -> str:
-    """Build the GPT system+user prompt for a 3-card spread reading.
+    """Build the GPT prompt for a tarot reading.
 
     Parameters
     ----------
     drawn_cards:
-        List of exactly 3 card dicts, each containing at minimum
-        ``id``, ``name_ko``, ``name_en``, and ``orientation``.
+        List of card dicts (1 card for ``category == "today"``, 3 otherwise),
+        each containing at minimum ``name_ko`` and ``name_en``.
     category:
         Category key (e.g. ``"love"``).
     category_label:
@@ -53,73 +53,58 @@ def build_prompt(
     question:
         The user's optional question string.
     meanings:
-        Full ``meanings_ko.json`` parsed dict.
+        Full ``meanings_ko.json`` parsed dict (not used in prompt; kept for
+        backwards-compatible call sites).
     """
-    positions = ["과거", "현재", "미래"]
+    if category == "today":
+        positions = ["오늘"]
+    else:
+        positions = ["과거", "현재", "미래"]
 
+    # Only card names and positions are passed — no meanings or hints.
     card_lines: list[str] = []
     for card, pos in zip(drawn_cards, positions):
-        card_meanings = meanings["cards"].get(card["id"], {})
-        meaning_text = card_meanings.get("upright", "")
-        hint = card_meanings.get("hints", {}).get(category, "")
-
         card_lines.append(
             f"- 위치: {pos}\n"
-            f"  카드: {card['name_ko']} ({card['name_en']})\n"
-            f"  기본 의미: {meaning_text}\n"
-            f"  {category_label} 힌트: {hint}"
+            f"  카드: {card['name_ko']} ({card['name_en']})"
         )
 
     cards_section = "\n\n".join(card_lines)
     question_section = (
-        f"질문: {question.strip()}" if question.strip() else "질문: (없음 – 일반 리딩)"
+        f"질문: {question.strip()}" if question.strip() else "질문: (없음)"
     )
 
-    c0, c1, c2 = drawn_cards
+    return f"""너는 타로 해설자가 아니라 '상황을 읽어주는 상담자'다.
+사용자는 타로를 도구로 자기 상황을 점검하려고 왔다.
 
-    return f"""당신은 20년 이상의 경력을 가진 전문 타로 리더입니다. \
-라이더-웨이트-스미스 덱의 상징과 의미를 깊이 이해하며, \
-한국어로 따뜻하고 통찰력 있는 리딩을 제공합니다.
+규칙:
+- 카드 의미/상징/전통적 해석을 직접 설명하지 마라.
+- 카드 이름을 단서로 '사용자의 현재 상태'를 읽어라.
+- 반복하지 마라.
+- 추상적인 문장(예: "좋은 기운", "우주가 돕는다") 쓰지 마라.
+- 현실적인 조언만 해라. 당장 할 수 있는 행동으로 떨어져야 한다.
+- 과장하지 마라. 단정하되, 공포 조장하지 마라.
+- 출력은 반드시 JSON 한 덩어리만. 다른 텍스트(설명/마크다운/코드펜스) 절대 금지.
 
-아래 정보를 바탕으로 매우 상세한 한국어 타로 리딩을 작성해주세요.
+문체:
+- 자연스럽고 직설적인 한국어
+- 사용자에게 직접 말하는 형태 ("너는 지금 ~ 상태야")
 
-## 리딩 정보
-카테고리: {category_label}
-{question_section}
+출력 형식(키 고정):
+{{
+  "summary": "...",
+  "insight": "...",
+  "flow": "...",
+  "action": "..."
+}}
 
-## 뽑힌 카드 (3장)
+리딩 정보
+- 카테고리: {category_label}
+- {question_section}
+
+뽑힌 카드
 {cards_section}
-
----
-
-다음 구조에 맞추어 **매우 상세하게** 작성해주세요. \
-각 섹션은 마크다운 제목(##)을 사용하고, 풍부한 내용으로 채워주세요.
-
-## 1. 종합 요약
-3장 카드의 전체적인 흐름과 핵심 메시지를 2~3문단으로 요약합니다.
-
-## 2. 과거 카드 — {c0['name_ko']} ({c0['name_en']})
-이 카드가 과거·원인 포지션에서 갖는 의미를 최소 6~8문단으로 상세히 서술합니다.
-{category_label} 맥락, 카드 상징, 현재와의 연결고리를 포함합니다.
-
-## 3. 현재 카드 — {c1['name_ko']} ({c1['name_en']})
-현재 상황에 대한 의미를 최소 6~8문단으로 서술합니다.
-{category_label} 맥락에서의 핵심 메시지와 과거→미래 가교 역할을 설명합니다.
-
-## 4. 미래 카드 — {c2['name_ko']} ({c2['name_en']})
-앞으로의 전망과 가능성을 최소 6~8문단으로 서술합니다.
-{category_label} 맥락에서의 방향 제시와 행동 지침을 포함합니다.
-
-## 5. 카드 조합 해석
-3장이 함께 만드는 시너지와 전체 스토리를 3~4문단으로 상세히 설명합니다.
-
-## 6. 실행 조언
-리딩을 바탕으로 구체적이고 실천 가능한 조언을 **5가지 이상** 번호 목록으로 제시합니다.
-
-## 7. 주의점 및 리스크
-이번 리딩에서 특히 주의해야 할 사항과 피해야 할 함정을 서술합니다.
-
-모든 내용은 한국어로 작성하며, 전문적이고 따뜻한 어조를 유지합니다."""
+"""
 
 
 def generate_reading(
@@ -163,8 +148,8 @@ def generate_reading(
         response = client.chat.completions.create(
             model=_GPT_MODEL,
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.8,
-            max_tokens=4000,
+            temperature=0.7,
+            max_tokens=1200,
         )
         return response.choices[0].message.content, None
     except Exception as exc:  # noqa: BLE001

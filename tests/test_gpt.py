@@ -75,13 +75,22 @@ def test_build_prompt_contains_card_names(sample_drawn_cards, sample_meanings):
 
 def test_build_prompt_contains_positions(sample_drawn_cards, sample_meanings):
     prompt = tarot_gpt.build_prompt(
-        sample_drawn_cards, "today", "오늘의 운세", "", sample_meanings
+        sample_drawn_cards, "love", "연애운", "", sample_meanings
     )
-    # Verify all positions are present and appear in the correct order
-    idx_past = prompt.index("과거")
-    idx_present = prompt.index("현재")
-    idx_future = prompt.index("미래")
+    # Verify position labels appear in the card section in the correct order
+    idx_past = prompt.index("위치: 과거")
+    idx_present = prompt.index("위치: 현재")
+    idx_future = prompt.index("위치: 미래")
     assert idx_past < idx_present < idx_future
+
+
+def test_build_prompt_today_contains_single_position(sample_drawn_cards, sample_meanings):
+    one = sample_drawn_cards[:1]
+    prompt = tarot_gpt.build_prompt(one, "today", "오늘의 운세", "", sample_meanings)
+    assert "위치: 오늘" in prompt
+    assert "위치: 과거" not in prompt
+    assert "위치: 현재" not in prompt
+    assert "위치: 미래" not in prompt
 
 
 def test_build_prompt_contains_category_label(sample_drawn_cards, sample_meanings):
