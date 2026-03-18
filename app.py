@@ -12,6 +12,7 @@ import importlib.util
 import json
 import os
 import random
+import re
 import sys
 import time
 from pathlib import Path
@@ -247,6 +248,72 @@ def _require_auth() -> None:
     st.stop()
 
 
+# ── GPT output parser ─────────────────────────────────────────────────────────
+
+# Ordered section titles produced by the current prompt format.
+_READING_SECTION_ORDER = ["한줄요약", "지금상태", "흐름", "지금 해야할것"]
+
+# Map of legacy JSON keys → Korean section titles (backward-compat).
+_JSON_KEY_MAP = {
+    "summary": "한줄요약",
+    "insight": "지금상태",
+    "flow": "흐름",
+    "action": "지금 해야할것",
+}
+
+
+def _parse_reading_sections(text: str) -> dict[str, str]:
+    """Parse GPT output into displayable sections.
+
+    Handles two possible formats:
+    1. 4-section text  (new format): lines starting with section headers in
+       ``_READING_SECTION_ORDER`` followed by a colon.
+    2. Legacy JSON (old cache/model drift): keys summary/insight/flow/action
+       mapped via ``_JSON_KEY_MAP`` to Korean section names.
+
+    Returns a dict of ``{section_title: body_text}``.  Falls back to a
+    single '상세풀이' key containing the raw text if neither format matches.
+    """
+    if not text:
+        return {}
+
+    raw = text.strip()
+
+    # 1) Try JSON (backward-compatible with the old prompt format)
+    try:
+        obj = json.loads(raw)
+        if isinstance(obj, dict):
+            mapped = {
+                kr: str(obj.get(en, "")).strip()
+                for en, kr in _JSON_KEY_MAP.items()
+            }
+            return {k: v for k, v in mapped.items() if v}
+    except Exception:  # noqa: BLE001
+        pass
+
+    # 2) Parse section-header text format
+    headers_pattern = "|".join(re.escape(h) for h in _READING_SECTION_ORDER)
+    pattern = re.compile(
+        rf"^({headers_pattern})\s*:\s*",
+        re.MULTILINE,
+    )
+    matches = list(pattern.finditer(raw))
+    if matches:
+        sections: dict[str, str] = {}
+        for i, m in enumerate(matches):
+            title = m.group(1).strip()
+            start = m.end()
+            end = matches[i + 1].start() if i + 1 < len(matches) else len(raw)
+            body = raw[start:end].strip()
+            if body:
+                sections[title] = body
+        if sections:
+            return sections
+
+    # 3) Fallback: show everything under a single heading
+    return {"상세풀이": raw}
+
+
 # ── Streamlit UI ──────────────────────────────────────────────────────────────
 
 _CATEGORY_LABELS = {
@@ -358,4 +425,18 @@ if "drawn" in st.session_state:
         elif reading_text:
             st.divider()
             st.subheader("🤖 GPT 상세풀이")
-            st.markdown(reading_text)
+
+            sections = _parse_reading_sections(reading_text)
+            rendered_any = False
+
+            for key in _READING_SECTION_ORDER:
+                if key in sections:
+                    st.markdown(f"**{key}**")
+                    st.write(sections[key])
+                    rendered_any = True
+
+            # Fallback: unknown section keys (e.g. '상세풀이')
+            if not rendered_any:
+                for k, v in sections.items():
+                    st.markdown(f"**{k}**")
+                    st.write(v)
