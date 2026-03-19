@@ -339,6 +339,7 @@ _CATEGORY_LABELS = {
     "health": "건강운",
     "romance": "애정운",
     "relationship": "인간관계",
+    "concern": "현재고민",
 }
 
 st.set_page_config(page_title="🔮 타로카드 리딩", layout="wide")
